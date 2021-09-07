@@ -132,6 +132,11 @@
 ;;
 ;;; Code:
 
+(defvar gendoxy-header-omit-filename nil
+  "If not nil, inserted header will include '@file' but no filename")
+
+(defvar gendoxy-header-copyright gendoxy-header-copyright-default
+  "If not nil, inserted header will include the (text) value as a copyright statement")
 
 (defvar gendoxy-backslash nil
   "If not nil, backslash will be used instead of asperand")
@@ -147,6 +152,8 @@
 
 
 (defconst gendoxy-nl (string ?\n) "The newline string")
+
+(defconst gendoxy-header-copyright-default "BSD-3-Clause")
 
 (defconst gendoxy-space-regex "[ \t\v\r\f\n]" "All blanks")
 
@@ -770,7 +777,10 @@
     (interactive)
     (goto-char (point-min))
     (insert (concat "/**" gendoxy-nl))
-    (insert (concat " * " (gendoxy-get-tag "file" 6) (buffer-name) gendoxy-nl))
+    (if gendoxy-header-omit-filename
+        (insert (concat " * " (gendoxy-get-tag "file" 0) gendoxy-nl))
+      (insert (concat " * " (gendoxy-get-tag "file" 6) (buffer-name) gendoxy-nl)))
+
     (insert (concat " * " (gendoxy-get-tag "brief" 5) "Header of"
                     gendoxy-nl))
     (insert (concat " * " (gendoxy-get-tag "date" 6) (current-time-string)
@@ -779,10 +789,11 @@
                     (if (string= "" user-full-name)
                         user-real-login-name
                       user-full-name) gendoxy-nl))
-    (insert (concat " * " (gendoxy-get-tag "copyright" 1) "BSD-3-Clause"
-                    gendoxy-nl))
+    (if gendoxy-header-copyright
+        (insert (concat " * " (gendoxy-get-tag "copyright" 1) gendoxy-header-copyright
+                        gendoxy-nl)))
     (unless gendoxy-skip-details
-      (insert (concat " * " gendoxy-nl " * This module" gendoxy-nl)))
+      (insert (concat " *" gendoxy-nl " * This module" gendoxy-nl)))
     (insert (concat " */" gendoxy-nl gendoxy-nl))
     (message "gendoxy: Header documented in file %s" (buffer-name)))
 
